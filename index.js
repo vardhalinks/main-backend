@@ -2,24 +2,31 @@ import express from "express";
 import Razorpay from "razorpay";
 import cors from "cors";
 import bodyParser from "body-parser";
+import crypto from "crypto";
 
 const app = express();
-// Enable CORS for frontend and external requests. Allow GET and POST from any origin.
+
 app.use(
   cors({
     origin: "*",
     methods: "GET,POST",
   })
 );
+
 app.use(bodyParser.json());
 
-// 🔑 Razorpay keys (replace with your own)
-const razorpay = new Razorpay({
-  key_id: "rzp_test_RfEZA7cY0icEUx", // YOUR_KEY_ID
-  key_secret: "j8CQrjDHuDKJGa4mHg50oea1", // YOUR_KEY_SECRET
+// Root Route (REQUIRED FOR RENDER)
+app.get("/", (req, res) => {
+  res.send("Backend running OK!");
 });
 
-// ✅ Create Order API
+// Razorpay Setup
+const razorpay = new Razorpay({
+  key_id: "rzp_test_RfEZA7cY0icEUx",
+  key_secret: "j8CQrjDHuDKJGa4mHg50oea1",
+});
+
+// Create Order
 app.post("/create-order", async (req, res) => {
   try {
     const { amount } = req.body;
@@ -31,29 +38,28 @@ app.post("/create-order", async (req, res) => {
     };
 
     const order = await razorpay.orders.create(options);
-
-    res.status(200).json(order);
+    res.json(order);
   } catch (error) {
+    console.log(error);
     res.status(500).json({ error: error.message });
   }
 });
 
-// ✅ Verify Payment API
-import crypto from "crypto";
-
+// Verify Payment
 app.post("/verify-payment", (req, res) => {
   const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
 
   const sign = razorpay_order_id + "|" + razorpay_payment_id;
+
   const expectedSign = crypto
-    .createHmac("sha256", "YOUR_KEY_SECRET")
-    .update(sign.toString())
+    .createHmac("sha256", "j8CQrjDHuDKJGa4mHg50oea1")
+    .update(sign)
     .digest("hex");
 
   if (razorpay_signature === expectedSign) {
-    res.json({ success: true, message: "Payment verified successfully" });
+    res.json({ success: true });
   } else {
-    res.json({ success: false, message: "Payment verification failed" });
+    res.json({ success: false });
   }
 });
 
