@@ -50,16 +50,17 @@ app.post("/verify-payment", (req, res) => {
   const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
 
   const sign = razorpay_order_id + "|" + razorpay_payment_id;
-
-  const expectedSign = crypto
-    .createHmac("sha256", "j8CQrjDHuDKJGa4mHg50oea1")
-    .update(sign)
-    .digest("hex");
+  // Use the configured Razorpay key secret for verification
+  const expectedSign = crypto.createHmac("sha256", razorpay.key_secret).update(sign).digest("hex");
 
   if (razorpay_signature === expectedSign) {
-    res.json({ success: true });
+    console.log("Payment verified:", { razorpay_order_id, razorpay_payment_id });
+    // Redirect to success page
+    return res.redirect("https://arunlive.com/success.html");
   } else {
-    res.json({ success: false });
+    console.warn("Payment verification failed:", { razorpay_order_id, razorpay_payment_id });
+    // Redirect to failed page
+    return res.redirect("https://arunlive.com/failed.html");
   }
 });
 
