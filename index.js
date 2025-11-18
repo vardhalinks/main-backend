@@ -22,8 +22,8 @@ app.get("/", (req, res) => {
 
 // Razorpay Setup
 const razorpay = new Razorpay({
-  key_id: "rzp_test_RfEZA7cY0icEUx",
-  key_secret: "j8CQrjDHuDKJGa4mHg50oea1",
+  key_id: "rzp_live_RhFJ21pFysOsWn",
+  key_secret: "qVGrcoLBh5Xo6wkrdf45PfiB",
 });
 
 // Create Order
