@@ -64,7 +64,7 @@ app.post("/generate-link", (req, res) => {
 
   try {
     const token = jwt.sign({ payment_id }, process.env.JWT_SECRET, { expiresIn: "2h" });
-    res.json({ secure_link: `https://arunlive.com/secure-session?token=${token}` });
+    res.json({ secure_link: `https://main-backend-dzf5.onrender.com/secure-session?token=${token}` });
   } catch {
     res.status(500).json({ error: "Failed to generate link" });
   }
