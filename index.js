@@ -10,16 +10,16 @@ dotenv.config();
 
 const app = express();
 
-// CORS
+// CORS Allowed
 app.use(cors({ origin: "*", methods: "GET,POST" }));
 app.use(bodyParser.json());
 
-// Root Route (required)
+// Required Root Route
 app.get("/", (req, res) => {
-  res.send("Backend running OK!");
+  res.send("Backend running OK! 🚀");
 });
 
-// Razorpay Setup (correct)
+// Razorpay Setup
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID,
   key_secret: process.env.RAZORPAY_KEY_SECRET,
@@ -57,7 +57,7 @@ app.post("/verify-payment", (req, res) => {
   }
 });
 
-// JWT Link Generator
+// JWT Link Generator (One-Time + IP Lock)
 app.post("/generate-link", (req, res) => {
   const { payment_id } = req.body;
   const ip = req.headers["x-forwarded-for"]?.split(",")[0] || req.socket.remoteAddress;
@@ -66,19 +66,20 @@ app.post("/generate-link", (req, res) => {
 
   try {
     const token = jwt.sign(
-      { payment_id, ip }, 
+      { payment_id, ip },
       process.env.JWT_SECRET,
-      { expiresIn: "1h" }
+      { expiresIn: "1h" } // 1 hour validity
     );
 
-    res.json({ secure_link: `https://main-backend-dzf5.onrender.com/secure-session?token=${token}` });
-    
+    return res.json({
+      secure_link: `https://main-backend-dzf5.onrender.com/secure-session?token=${token}`,
+    });
   } catch {
     res.status(500).json({ error: "Failed to generate link" });
   }
 });
 
-// Secure Session Redirect
+// One-Time Access + IP Verified Access
 const usedTokens = new Set();
 
 app.get("/secure-session", (req, res) => {
@@ -90,26 +91,23 @@ app.get("/secure-session", (req, res) => {
   try {
     const data = jwt.verify(token, process.env.JWT_SECRET);
 
-    // One time usage rule
+    // One time usage
     if (usedTokens.has(token)) {
-      return res.status(403).send("⛔ Access expired!");
+      return res.status(403).send("⛔ Access Expired!");
     }
 
-    // IP verification rule
+    // IP Verified
     if (data.ip !== ip) {
       return res.status(403).send("⛔ Invalid Device or IP!");
     }
 
-    // Mark token as used
     usedTokens.add(token);
-
-    // redirect
     return res.redirect("https://calendly.com/linksvardha/60min");
 
-  } catch (err) {
+  } catch {
     return res.status(403).send("⛔ Session Access Denied");
   }
 });
 
 const port = process.env.PORT || 5000;
-app.listen(port, () => console.log("Server running on port " + port));
+app.listen(port, () => console.log("🚀 Server running on port " + port));
