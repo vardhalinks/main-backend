@@ -111,8 +111,7 @@ app.get("/secure-session", (req, res) => {
   try {
     jwt.verify(token, jwtSecret);
     // Token valid → redirect to Calendly (replace with real link)
-    return res.redirect("https://calendly.com/linksvardha/60min");
-
+    return res.redirect("https://calendly.com/YOURREAL_LINK");
   } catch (err) {
     return res.status(403).send("⛔ Session Access Denied");
   }
