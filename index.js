@@ -76,12 +76,30 @@ app.get("/secure-session", (req, res) => {
 
   try {
     jwt.verify(token, process.env.JWT_SECRET);
-    
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, "0");
-
-    return res.redirect(`https://calendly.com/linksvardha/60min`);
+    // Token valid → show an intermediate secure page
+    return res.send(`
+      <html>
+      <head>
+        <title>Secure Session Access</title>
+        <style>
+          body { font-family: sans-serif; text-align:center; padding:50px; }
+          button {
+            padding: 12px 24px; font-size:18px; border:none;
+            background:#f6c84c; color:#000; font-weight:bold;
+            border-radius:12px; cursor:pointer;
+          }
+          button:hover { background:#ffdd66; }
+        </style>
+      </head>
+      <body>
+        <h2>🎉 Payment Verified Successfully</h2>
+        <p>Your 1-on-1 Guidance Session is Now Unlocked.</p>
+        <button onclick="window.location.href='https://calendly.com/linksvardha/60min'">
+          Schedule Your Session
+        </button>
+      </body>
+      </html>
+    `);
   } catch (err) {
     return res.status(403).send("⛔ Session Access Denied");
   }
