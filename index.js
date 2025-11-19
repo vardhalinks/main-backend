@@ -86,7 +86,7 @@ app.post("/generate-link", (req, res) => {
     const token = jwt.sign({ payment_id }, jwtSecret, { expiresIn: "2h" });
 
     return res.json({
-      secure_link: `https://yourdomain.com/secure-session?token=${token}`,
+      secure_link: `https://arunlive.com/secure-session?token=${token}`,
     });
   } catch (err) {
     console.error("Error generating token", err);
@@ -111,7 +111,8 @@ app.get("/secure-session", (req, res) => {
   try {
     jwt.verify(token, jwtSecret);
     // Token valid → redirect to Calendly (replace with real link)
-    return res.redirect("https://calendly.com/YOURREAL_LINK");
+    return res.redirect("https://calendly.com/linksvardha/60min");
+
   } catch (err) {
     return res.status(403).send("⛔ Session Access Denied");
   }
