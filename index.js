@@ -73,10 +73,16 @@ app.post("/generate-link", (req, res) => {
 // Secure Session Redirect
 app.get("/secure-session", (req, res) => {
   const token = req.query.token;
+
   try {
     jwt.verify(token, process.env.JWT_SECRET);
-    return res.redirect("https://calendly.com/linksvardha/60min");
-  } catch {
+    
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+
+    return res.redirect(`https://calendly.com/linksvardha/60min?month=${year}-${month}`);
+  } catch (err) {
     return res.status(403).send("⛔ Session Access Denied");
   }
 });
