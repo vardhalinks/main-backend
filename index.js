@@ -81,7 +81,7 @@ app.get("/secure-session", (req, res) => {
     const year = now.getFullYear();
     const month = String(now.getMonth() + 1).padStart(2, "0");
 
-    return res.redirect(`https://calendly.com/linksvardha/60min?month=${year}-${month}`);
+    return res.redirect(`https://calendly.com/linksvardha/60min`);
   } catch (err) {
     return res.status(403).send("⛔ Session Access Denied");
   }
