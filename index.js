@@ -60,46 +60,52 @@ app.post("/verify-payment", (req, res) => {
 // JWT Link Generator
 app.post("/generate-link", (req, res) => {
   const { payment_id } = req.body;
+  const ip = req.headers["x-forwarded-for"]?.split(",")[0] || req.socket.remoteAddress;
+
   if (!payment_id) return res.status(400).json({ error: "payment_id is required" });
 
   try {
-    const token = jwt.sign({ payment_id }, process.env.JWT_SECRET, { expiresIn: "2h" });
+    const token = jwt.sign(
+      { payment_id, ip }, 
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" }
+    );
+
     res.json({ secure_link: `https://main-backend-dzf5.onrender.com/secure-session?token=${token}` });
+    
   } catch {
     res.status(500).json({ error: "Failed to generate link" });
   }
 });
 
 // Secure Session Redirect
+const usedTokens = new Set();
+
 app.get("/secure-session", (req, res) => {
   const token = req.query.token;
+  const ip = req.headers["x-forwarded-for"]?.split(",")[0] || req.socket.remoteAddress;
+
+  if (!token) return res.status(400).send("Token missing!");
 
   try {
-    jwt.verify(token, process.env.JWT_SECRET);
-    // Token valid → show an intermediate secure page
-    return res.send(`
-      <html>
-      <head>
-        <title>Secure Session Access</title>
-        <style>
-          body { font-family: sans-serif; text-align:center; padding:50px; }
-          button {
-            padding: 12px 24px; font-size:18px; border:none;
-            background:#f6c84c; color:#000; font-weight:bold;
-            border-radius:12px; cursor:pointer;
-          }
-          button:hover { background:#ffdd66; }
-        </style>
-      </head>
-      <body>
-        <h2>🎉 Payment Verified Successfully</h2>
-        <p>Your 1-on-1 Guidance Session is Now Unlocked.</p>
-        <button onclick="window.location.href='https://calendly.com/linksvardha/60min'">
-          Schedule Your Session
-        </button>
-      </body>
-      </html>
-    `);
+    const data = jwt.verify(token, process.env.JWT_SECRET);
+
+    // One time usage rule
+    if (usedTokens.has(token)) {
+      return res.status(403).send("⛔ Access expired!");
+    }
+
+    // IP verification rule
+    if (data.ip !== ip) {
+      return res.status(403).send("⛔ Invalid Device or IP!");
+    }
+
+    // Mark token as used
+    usedTokens.add(token);
+
+    // redirect
+    return res.redirect("https://calendly.com/linksvardha/60min");
+
   } catch (err) {
     return res.status(403).send("⛔ Session Access Denied");
   }
