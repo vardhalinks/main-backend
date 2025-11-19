@@ -26,8 +26,8 @@ app.get("/", (req, res) => {
 
 // Razorpay Setup — use env vars for keys
 const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID,
-  key_secret: process.env.RAZORPAY_KEY_SECRET,
+  key_id: process.env.rzp_test_RfEZA7cY0icEUx,
+  key_secret: process.env.j8CQrjDHuDKJGa4mHg50oea1,
 });
 
 // Create Order
@@ -55,7 +55,7 @@ app.post("/verify-payment", (req, res) => {
 
   const sign = razorpay_order_id + "|" + razorpay_payment_id;
   // Use the configured Razorpay key secret for verification
-  const expectedSign = crypto.createHmac("sha256", process.env.RAZORPAY_KEY_SECRET || "").update(sign).digest("hex");
+  const expectedSign = crypto.createHmac("sha256", process.env.j8CQrjDHuDKJGa4mHg50oea1|| "").update(sign).digest("hex");
 
   if (razorpay_signature === expectedSign) {
     console.log("Payment verified:", { razorpay_order_id, razorpay_payment_id });
@@ -111,7 +111,8 @@ app.get("/secure-session", (req, res) => {
   try {
     jwt.verify(token, jwtSecret);
     // Token valid → redirect to Calendly (replace with real link)
-    return res.redirect("https://calendly.com/YOURREAL_LINK");
+    return res.redirect("https://calendly.com/linksvardha/60min");
+
   } catch (err) {
     return res.status(403).send("⛔ Session Access Denied");
   }
