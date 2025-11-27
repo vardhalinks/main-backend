@@ -5,6 +5,7 @@ import bodyParser from "body-parser";
 import crypto from "crypto";
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
+import https from "https";
 
 dotenv.config();
 
@@ -111,3 +112,20 @@ app.get("/secure-session", (req, res) => {
 
 const port = process.env.PORT || 5000;
 app.listen(port, () => console.log("🚀 Server running on port " + port));
+
+// Keep-alive ping to render backend (every 8 minutes)
+const pingUrl = "https://main-backend-dzf5.onrender.com";
+setInterval(() => {
+  try {
+    const req = https.get(pingUrl, (res) => {
+      console.log(`pinged ${pingUrl} - status ${res.statusCode}`);
+      // Consume response to free socket
+      res.on('data', () => {});
+    });
+    req.on('error', (err) => {
+      console.log('ping failed', err.message);
+    });
+  } catch (e) {
+    console.log('ping failed', e.message);
+  }
+}, 8 * 60 * 1000); // हर 8 मिनट में पिंग
