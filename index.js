@@ -6,8 +6,13 @@ import crypto from "crypto";
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
 import https from "https";
+import sectionRoutes from "./src/routes/sectionRoutes.js";
+import { connectDB } from "./src/config/db.js";
 
 dotenv.config();
+
+// Connect to MongoDB
+connectDB();
 
 const app = express();
 
@@ -19,6 +24,9 @@ app.use(bodyParser.json());
 app.get("/", (req, res) => {
   res.send("Backend running OK! 🚀");
 });
+
+// CMS Section Routes
+app.use("/api/sections", sectionRoutes);
 
 // Razorpay Setup
 const razorpay = new Razorpay({
