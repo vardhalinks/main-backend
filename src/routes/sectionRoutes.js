@@ -1,5 +1,4 @@
 // backend/src/routes/sectionRoutes.js
-// backend/src/routes/sectionRoutes.js
 import express from "express";
 import { Section } from "../models/Section.js";
 import { protect } from "../middleware/auth.js";
