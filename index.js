@@ -8,6 +8,11 @@ import jwt from "jsonwebtoken";
 import https from "https";
 import sectionRoutes from "./src/routes/sectionRoutes.js";
 import { connectDB } from "./src/config/db.js";
+import authRoutes from "./src/routes/authRoutes.js";
+import adminRoutes from "./src/routes/adminRoutes.js";
+import uploadRoutes from "./src/routes/uploadRoutes.js";
+import orderRoutes from "./src/routes/orderRoutes.js";
+import { notFound, errorHandler } from "./src/middleware/errorHandler.js";
 
 dotenv.config();
 
@@ -27,6 +32,12 @@ app.get("/", (req, res) => {
 
 // CMS Section Routes
 app.use("/api/sections", sectionRoutes);
+
+// Admin / Auth / Upload
+app.use("/api/auth", authRoutes);
+app.use("/api/admin", adminRoutes);
+app.use("/api/upload", uploadRoutes);
+app.use("/api/orders", orderRoutes);
 
 // Razorpay Setup
 const razorpay = new Razorpay({
@@ -120,6 +131,10 @@ app.get("/secure-session", (req, res) => {
 
 const port = process.env.PORT || 5000;
 app.listen(port, () => console.log("🚀 Server running on port " + port));
+
+// Error handlers
+app.use(notFound);
+app.use(errorHandler);
 
 // Keep-alive ping to render backend (every 8 minutes)
 const pingUrl = "https://main-backend-dzf5.onrender.com";
