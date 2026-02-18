@@ -6,35 +6,33 @@ import crypto from "crypto";
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
 import https from "https";
+import mongoose from 'mongoose';
+import heroRoutes from './routes/heroRoutes.js';
+import liveBannerRoutes from './routes/liveBannerRoutes.js';
 
 dotenv.config();
 
 const app = express();
 
-const corsOrigin = process.env.CORS_ORIGIN;
-const allowedOrigins = corsOrigin
-  ? corsOrigin.split(",").map((origin) => origin.trim())
-  : ["*"];
-
 // CORS Allowed
-app.use(
-  cors({
-    origin: (origin, callback) => {
-      if (!origin) return callback(null, true);
-      if (allowedOrigins.includes("*") || allowedOrigins.includes(origin)) {
-        return callback(null, true);
-      }
-      return callback(new Error("Not allowed by CORS"));
-    },
-    methods: "GET,POST",
-  })
-);
+app.use(cors({ origin: "*", methods: "GET,POST,PUT,DELETE" }));
 app.use(bodyParser.json());
+
+// MongoDB connection (optional: set MONGO_URI in .env)
+const mongoUri = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/landing';
+mongoose
+  .connect(mongoUri)
+  .then(() => console.log('MongoDB connected'))
+  .catch((err) => console.error('MongoDB connection error', err));
 
 // Required Root Route
 app.get("/", (req, res) => {
   res.send("Backend running OK! 🚀");
 });
+
+// Mount APIs
+app.use('/api/hero', heroRoutes);
+app.use('/api/live-banner', liveBannerRoutes);
 
 // Razorpay Setup
 const razorpay = new Razorpay({
@@ -78,10 +76,6 @@ app.post("/verify-payment", (req, res) => {
 app.post("/generate-link", (req, res) => {
   const { payment_id } = req.body;
   const ip = req.headers["x-forwarded-for"]?.split(",")[0] || req.socket.remoteAddress;
-  const appBaseUrl =
-    process.env.APP_BASE_URL ||
-    process.env.RENDER_EXTERNAL_URL ||
-    `http://localhost:${process.env.PORT || 5000}`;
 
   if (!payment_id) return res.status(400).json({ error: "payment_id is required" });
 
@@ -93,7 +87,7 @@ app.post("/generate-link", (req, res) => {
     );
 
     return res.json({
-      secure_link: `${appBaseUrl}/secure-session?token=${token}`,
+      secure_link: `https://main-backend-dzf5.onrender.com/secure-session?token=${token}`,
     });
   } catch {
     res.status(500).json({ error: "Failed to generate link" });
@@ -134,10 +128,7 @@ const port = process.env.PORT || 5000;
 app.listen(port, () => console.log("🚀 Server running on port " + port));
 
 // Keep-alive ping to render backend (every 8 minutes)
-const pingUrl =
-  process.env.APP_BASE_URL ||
-  process.env.RENDER_EXTERNAL_URL ||
-  `http://localhost:${port}`;
+const pingUrl = "https://main-backend-dzf5.onrender.com";
 setInterval(() => {
   try {
     const req = https.get(pingUrl, (res) => {
